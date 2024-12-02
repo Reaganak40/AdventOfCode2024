@@ -13,6 +13,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out)
 file(GLOB SOURCES
     ${CMAKE_SOURCE_DIR}/main.cpp
     ${CMAKE_SOURCE_DIR}/day1/*.cpp
+    ${CMAKE_SOURCE_DIR}/day2/*.cpp
 )
 
 add_executable(aventOfCode2024 ${SOURCES})
