@@ -15,6 +15,7 @@ file(GLOB SOURCES
     ${CMAKE_SOURCE_DIR}/day1/*.cpp
     ${CMAKE_SOURCE_DIR}/day2/*.cpp
     ${CMAKE_SOURCE_DIR}/day3/*.cpp
+    ${CMAKE_SOURCE_DIR}/day4/*.cpp
 )
 
 add_executable(aventOfCode2024 ${SOURCES})
