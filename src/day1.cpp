@@ -5,7 +5,7 @@ void ReadInput(std::vector<int>& arr1, std::vector<int>& arr2)
     arr1.reserve(1000);
     arr2.reserve(1000);
 
-    std::ifstream file("day1/input.txt");
+    std::ifstream file("inputs/day1/input.txt");
     if (!file.is_open())
     {
         std::cerr << "Could not open file" << std::endl;

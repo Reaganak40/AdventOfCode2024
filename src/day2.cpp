@@ -126,7 +126,7 @@ bool IsSafe2(const std::vector<int>& nums)
 void DoDay2()
 {
     std::cout << "Day 2" << std::endl;
-    std::ifstream file("day2/input.txt");
+    std::ifstream file("inputs/day2/input.txt");
     if (!file.is_open())
     {
         std::cerr << "Could not open file" << std::endl;

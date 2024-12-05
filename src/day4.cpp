@@ -215,7 +215,7 @@ int DoCrosswordPuzzle2(const std::vector<std::string>& grid)
 void DoDay4()
 {
     std::cout << "Day 4" << std::endl;
-    std::ifstream file("day4/input.txt");
+    std::ifstream file("inputs/day4/input.txt");
     if (!file.is_open())
     {
         std::cerr << "Could not open file" << std::endl;
