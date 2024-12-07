@@ -8,3 +8,5 @@
 #include <cctype>
 #include <unordered_map>
 #include <array>
+#include <functional>
+#include <stdint.h>
