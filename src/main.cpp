@@ -10,12 +10,12 @@ void DoDay7();
 
 int main(int argc, char *argv[])
 {
-    //DoDay1();
-    //DoDay2();
-    //DoDay3();
-    //DoDay4();
-    //DoDay5();
-    //DoDay6();
+    DoDay1();
+    DoDay2();
+    DoDay3();
+    DoDay4();
+    DoDay5();
+    DoDay6();
     DoDay7();
     return 0;
 }

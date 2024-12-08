@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.26.3)
-project(aventOfCode2024)
+project(adventOfCode2024)
 
 # Set the C++ standard
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -15,13 +15,13 @@ file(GLOB SOURCES
     ${CMAKE_SOURCE_DIR}/src/*.cpp
 )
 
-add_executable(aventOfCode2024 ${SOURCES})
+add_executable(adventOfCode2024 ${SOURCES})
 
 # name of the executable
-set_target_properties(aventOfCode2024 PROPERTIES OUTPUT_NAME "aoc2024")
+set_target_properties(adventOfCode2024 PROPERTIES OUTPUT_NAME "aoc2024")
 
 # include directories
-target_include_directories(aventOfCode2024 PRIVATE ${CMAKE_SOURCE_DIR})
+target_include_directories(adventOfCode2024 PRIVATE ${CMAKE_SOURCE_DIR})
 
 # Precompiled headers
-target_precompile_headers(aventOfCode2024 PRIVATE ${CMAKE_SOURCE_DIR}/pch.h)
+target_precompile_headers(adventOfCode2024 PRIVATE ${CMAKE_SOURCE_DIR}/pch.h)
