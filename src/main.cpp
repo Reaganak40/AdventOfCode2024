@@ -7,6 +7,7 @@ void DoDay4();
 void DoDay5();
 void DoDay6();
 void DoDay7();
+void DoDay8();
 
 int main(int argc, char *argv[])
 {
@@ -17,5 +18,7 @@ int main(int argc, char *argv[])
     DoDay5();
     DoDay6();
     DoDay7();
+    DoDay8();
+
     return 0;
 }
