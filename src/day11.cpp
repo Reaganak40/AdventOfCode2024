@@ -68,7 +68,7 @@ uint64_t Blink(const std::vector<uint64_t>& start, int part = 1)
 
 void DoDay11()
 {
-    std::cout << "Day 9: " << std::endl;
+    std::cout << "Day 11: " << std::endl;
     std::ifstream file("inputs/day11/input.txt");
     if (!file.is_open()) {
         std::cerr << "Could not open file" << std::endl;
