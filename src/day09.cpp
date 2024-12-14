@@ -150,7 +150,7 @@ uint64_t MoveWholeFiles(const std::string& sequence) {
 
 void DoDay9() {
     std::cout << "Day 9: " << std::endl;
-    std::ifstream file("inputs/day9/input.txt");
+    std::ifstream file("inputs/day09/input.txt");
     if (!file.is_open()) {
         std::cerr << "Could not open file" << std::endl;
         return;

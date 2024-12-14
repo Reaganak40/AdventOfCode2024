@@ -13,22 +13,24 @@ void DoDay10();
 void DoDay11();
 void DoDay12();
 void DoDay13();
+void DoDay14();
 
 int main(int argc, char *argv[])
 {
-    // DoDay1();
-    // DoDay2();
-    // DoDay3();
-    // DoDay4();
-    // DoDay5();
-    // DoDay6();
-    // DoDay7();
-    // DoDay8();
-    // DoDay9();
-    // DoDay10();
-    // DoDay11();
-    // DoDay12();
+    DoDay1();
+    DoDay2();
+    DoDay3();
+    DoDay4();
+    DoDay5();
+    DoDay6();
+    DoDay7();
+    DoDay8();
+    DoDay9();
+    DoDay10();
+    DoDay11();
+    DoDay12();
     DoDay13();
-    
+    DoDay14();
+
     return 0;
 }

@@ -42,7 +42,7 @@ bool ISValidCalibration(const std::vector<uint64_t>& nums, bool use_concat = fal
 void DoDay7()
 {
     std::cout << "Day 7" << std::endl;
-    std::ifstream file("inputs/day7/input.txt");
+    std::ifstream file("inputs/day07/input.txt");
     if (!file.is_open())
     {
         std::cerr << "Could not open file" << std::endl;

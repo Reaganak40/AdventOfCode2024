@@ -50,7 +50,7 @@ void FixSequence(std::vector<int>& sequence, const std::unordered_map<int, std::
 void DoDay5()
 {
     std::cout << "Day 5" << std::endl;
-    std::ifstream file("inputs/day5/input.txt");
+    std::ifstream file("inputs/day05/input.txt");
     if (!file.is_open())
     {
         std::cerr << "Could not open file" << std::endl;

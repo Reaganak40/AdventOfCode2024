@@ -86,7 +86,7 @@ int CountUniqueLocations(const std::vector<std::string>& grid, int part = 1) {
 
 void DoDay8() {
     std::cout << "Day 8" << std::endl;
-    std::ifstream file("inputs/day8/input.txt");
+    std::ifstream file("inputs/day08/input.txt");
     if (!file.is_open()) {
         std::cerr << "Could not open file" << std::endl;
         return;

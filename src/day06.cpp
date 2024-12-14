@@ -194,7 +194,7 @@ int GetPossibleLoops(std::vector<std::string>& grid)
 void DoDay6()
 {
     std::cout << "Day 6" << std::endl;
-    std::ifstream file("inputs/day6/input.txt");
+    std::ifstream file("inputs/day06/input.txt");
     if (!file.is_open())
     {
         std::cerr << "Could not open file" << std::endl;

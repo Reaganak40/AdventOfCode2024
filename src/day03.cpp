@@ -129,7 +129,7 @@ unsigned long long ParseInput2(const std::string& input)
 void DoDay3()
 {
     std::cout << "Day 3" << std::endl;
-    std::ifstream file("inputs/day3/input.txt");
+    std::ifstream file("inputs/day03/input.txt");
     if (!file.is_open())
     {
         std::cerr << "Could not open file" << std::endl;
