@@ -139,30 +139,34 @@ bool Is180(const Node& a, const Node& b)
         a.dir == Direction::West && b.dir == Direction::East;
 }
 
-uint64_t SolveMaze(std::vector<std::string>& maze)
+void SolveMaze(std::vector<std::string>& maze, uint64_t& distance, uint64_t& num_spots, bool show_maze)
 {
     Graph graph;
     Node start;
     Node end;
+    distance = 0;
+    num_spots = 1; // including start
+
     InitGraph(maze, graph, start, end);
     if (graph.empty()) {
         std::cout << "Graph is empty" << std::endl;
-        return 0;
+        return;
     }
     if (!IsValid(start) || !IsValid(end)) {
         std::cout << "Invalid start or end node" << std::endl;
-        return 0;
+        return;
     }
 
     // dijkstra
     std::priority_queue<std::pair<uint64_t, Node>, std::vector<std::pair<uint64_t, Node>>, NodeCompare> pq;
     std::unordered_map<Node, uint64_t, NodeHash> dist;
-    std::unordered_map<Node, Node, NodeHash> prev;
+    std::unordered_map<Node, std::vector<Node>, NodeHash> prev; // allow for ties
+    std::unordered_set<Node, NodeHash> end_nodes;
 
     // initialize dist, prev, and pq
     for (auto& [node, edges] : graph) {
         dist[node] = INF;
-        prev[node] = { -1, -1, Direction::NotADir };
+        prev[node]; // empty indicates no previous node
     }
     dist[start] = 0;
     pq.push({ 0, start });
@@ -171,47 +175,70 @@ uint64_t SolveMaze(std::vector<std::string>& maze)
         auto [curr_dist, curr_node] = pq.top();
         pq.pop();
         if (curr_node.x == end.x && curr_node.y == end.y) {
-            end = curr_node;
-            break;
+            if (distance == 0) {
+                distance = curr_dist;
+            }
+            if (distance == curr_dist) {
+                end_nodes.insert(curr_node); // if reached from multiple directions
+            }
         }
 
         for (auto& next_node : graph[curr_node]) {
-            if (Is180(prev[curr_node],next_node)) {
-                continue;
+            if (prev[curr_node].size() > 0) {
+                if (Is180(prev[curr_node].back(), next_node)) {
+                    continue;
+                }
             }
             uint64_t alt = dist[curr_node] + (next_node.dir == curr_node.dir ? 1 : 1001);
-            if (alt < dist[next_node]) {
+            if (alt == dist[next_node]) {
+                // add if not already in prev
+                if (std::find(prev[next_node].begin(), prev[next_node].end(), curr_node) == prev[next_node].end()) {
+                    prev[next_node].push_back(curr_node);
+                }
+                pq.push({ alt, next_node });
+            }
+            else if (alt < dist[next_node]) {
                 dist[next_node] = alt;
-                prev[next_node] = curr_node;
+                prev[next_node].clear();
+                prev[next_node].push_back(curr_node);
                 pq.push({ alt, next_node });
             }
         }
     }
 
-    // show on maze
-    Node curr = end;
-    while (curr != start) {
-        maze[curr.y][curr.x] = '+';
-        curr = prev[curr];
-    }
-
-    int moves = 0;
-    for (auto& line : maze) {
-        for (auto c : line) {
-            if (c == '+') {
-                moves++;
-                std::cout << ANSI_COLOR_RED << c << ANSI_COLOR_RESET;
-            }
-            else {
-                std::cout << c;
-            }
+    std::function<void(Node)> backtrack = [&](Node node) {
+        if (node == start) {
+            return;
         }
-        std::cout << std::endl;
+
+        if (maze[node.y][node.x] != '+') {
+            maze[node.y][node.x] = '+';
+            num_spots++;
+        }
+
+        for (auto& prev_node : prev[node]) {
+            backtrack(prev_node);
+        }
+    };
+
+    // show on maze
+    for (auto& end_node : end_nodes) {
+        backtrack(end_node);
     }
 
-    std::cout << "Distance: " << dist[end] << std::endl;
-    std::cout << "Moves: " << moves << std::endl;
-    return dist[end];
+    if (show_maze) {
+        for (auto& line : maze) {
+            for (auto c : line) {
+                if (c == '+') {
+                    std::cout << ANSI_COLOR_RED << c << ANSI_COLOR_RESET;
+                }
+                else {
+                    std::cout << c;
+                }
+            }
+            std::cout << std::endl;
+        }
+    }
 }
 
 void DoDay16()
@@ -235,6 +262,9 @@ void DoDay16()
         maze.push_back(line);
     }
 
-    SolveMaze(maze);
-    //std::cout << "    Part 1: " << SolveMaze(maze) << std::endl;
+    uint64_t distance = 0;
+    uint64_t best_spots = 0;
+    SolveMaze(maze, distance, best_spots, true);
+    std::cout << "    Part 1: " << distance << std::endl;
+    std::cout << "    Part 2: " << best_spots << std::endl;
 }
