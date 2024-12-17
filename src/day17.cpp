@@ -4,10 +4,10 @@
 
 struct Program
 {
-    int a;
-    int b;
-    int c;
-    std::vector<int> instructions;
+    uint64_t a;
+    uint64_t b;
+    uint64_t c;
+    std::vector<uint64_t> instructions;
 };
 
 // opcodes
@@ -20,17 +20,14 @@ struct Program
 #define bdv 6
 #define cdv 7
 
-std::string RunProgram(Program program, int part = 1) {
+std::string RunProgram(Program program) {
 
-    int curr_a = 1;
-    
-    start_program:
-    if (part == 2) {
-        program.a = curr_a;
-    }
+    uint64_t curr_a = 1;
+    uint64_t ip = 0;
+    std::vector<uint64_t> output;
+    output.reserve(program.instructions.size());
 
-    int ip = 0;
-    auto get_combo_op = [&](int op) -> int {
+    auto get_combo_op = [&](uint64_t op) -> uint64_t {
         if (op <= 3) {
             return op;
         }
@@ -47,12 +44,12 @@ std::string RunProgram(Program program, int part = 1) {
         };
     };
 
-    std::string output = "";
+    ip = 0;
     while(ip < program.instructions.size()) {
-        int opcode = program.instructions[ip];
+        uint64_t opcode = program.instructions[ip];
         switch(opcode) {
             case adv:
-                program.a = program.a / (int)pow(2, get_combo_op(program.instructions[ip + 1]));
+                program.a = program.a / (uint64_t)pow(2, get_combo_op(program.instructions[ip + 1]));
                 ip += 2;
                 break;
             case bxl:
@@ -75,48 +72,91 @@ std::string RunProgram(Program program, int part = 1) {
                 ip += 2;
                 break;
             case out:
-                if (output.size() > 0) {
-                    output += ",";
-                }
-                output += std::to_string(get_combo_op(program.instructions[ip + 1]) % 8);
+                output.push_back(get_combo_op(program.instructions[ip + 1]) % 8);
                 ip += 2;
                 break;
             case bdv:
-                program.b = program.a / (int)pow(2, get_combo_op(program.instructions[ip + 1]));
+                program.b = program.a / (uint64_t)pow(2, get_combo_op(program.instructions[ip + 1]));
                 ip += 2;
                 break;
             case cdv:
-                program.c = program.a / (int)pow(2, get_combo_op(program.instructions[ip + 1]));
+                program.c = program.a / (uint64_t)pow(2, get_combo_op(program.instructions[ip + 1]));
                 ip += 2;
                 break;
             default:
                 std::cout << "Invalid opcode: " << opcode << std::endl;
                 return "";
         }
+       
     }
 
-    if (part == 1) {
-        return output;
-    } else {
+    std::string output_str;
+    for (uint64_t i = 0; i < output.size(); i++) {
+        output_str += std::to_string(output[i]);
+        if (i != output.size() - 1) {
+            output_str += ",";
+        }
+    }
+    return output_str;
+}
 
-        std::vector<int> n_program;
-        SplitIntoNumbers(output, n_program);
+uint64_t ReverseProgram(Program program) {
+    uint64_t goal = program.instructions.back();
 
-        // check if same as original program
-        if (n_program.size() == program.instructions.size()) {
-            for (int i = 0; i < n_program.size(); i++) {
-                if (n_program[i] != program.instructions[i]) {
-                    curr_a++;
-                    goto start_program;
+    auto is_part_of_sequence = [&](int size, std::string& sequence) -> bool {
+        std::vector<uint64_t> sequence_numbers;
+        SplitIntoLargeNumbers(sequence, sequence_numbers);
+        int idx = program.instructions.size() - size;
+        for (int i = 0; i < sequence.size(); i++) {
+            if (program.instructions[idx++] != sequence_numbers[i]) {
+                return false;
+            }
+            if (idx == program.instructions.size()) {
+                if (i == (sequence_numbers.size() - 1)) {
+                    return true;
+                }
+                break;
+            }
+        }
+
+        return false;
+     };
+    
+    std::vector<std::pair<uint64_t, int>> nodes;
+    for (uint64_t a = 1; a < 8; a++) {
+        program.a = a;
+        std::string res = RunProgram(program);
+        if (is_part_of_sequence(1, res)) {
+            nodes.push_back({ a, 1 });
+        }
+    }
+
+    if (nodes.size() == 0) {
+        std::cout << "Could not reverse program" << std::endl;
+        return 0;
+    }
+
+    std::vector<uint64_t> results;
+    while (!nodes.empty()) {
+        auto [node, idx] = nodes.back();
+        nodes.pop_back();
+        for (uint64_t next_node = node * 8; ((next_node / 8)) == node; next_node++) {
+            program.a = next_node;
+            std::string res = RunProgram(program);
+            if (is_part_of_sequence(idx + 1, res)) {
+                if ((idx + 1) == program.instructions.size()) {
+                    results.push_back(next_node);
+                }
+                else {
+                    nodes.push_back({ next_node, idx + 1 });
                 }
             }
-        } else {
-            curr_a++;
-            goto start_program;
         }
-        
-        return std::to_string(program.a);
     }
+
+    // sort results
+    std::sort(results.begin(), results.end());
+    return results[0];
 }
 
 void DoDay17()
@@ -134,17 +174,17 @@ void DoDay17()
     
     // get program/input
     std::getline(file, line);
-    sscanf(line.c_str(), "Register A: %d", &program.a);
+    (void)sscanf(line.c_str(), "Register A: %llu", &program.a);
     std::getline(file, line);
-    sscanf(line.c_str(), "Register B: %d", &program.b);
+    (void)sscanf(line.c_str(), "Register B: %llu", &program.b);
     std::getline(file, line);
-    sscanf(line.c_str(), "Register C: %d", &program.c);
+    (void)sscanf(line.c_str(), "Register C: %llu", &program.c);
     
     std::getline(file, line);
     std::getline(file, line);
-    SplitIntoNumbers(line, program.instructions);
+    SplitIntoLargeNumbers(line, program.instructions);
     file.close();
 
-    std::cout << "    Part 1: " << RunProgram(program, 1) << std::endl;
-    std::cout << "    Part 2: " << RunProgram(program, 2) << std::endl;
+    std::cout << "    Part 1: " << RunProgram(program) << std::endl;
+    std::cout << "    Part 2: " << ReverseProgram(program) << std::endl;
 }
