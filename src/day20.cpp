@@ -1,26 +1,40 @@
 #include "pch.h"
 
-#define CHEAT_OFF 0
-#define CHEAT_ON_1 1
-#define CHEAT_ON_2 2
-#define CHEAT_DISABLED 3
+#define NOT_FOUND ((uint64_t)-1)
+
+// how much time to save compared to not cheating
+#define SAVE_GOAL 2
 
 struct BFSNode
 {
     int x, y;
-    int distance;
+    uint64_t distance;
 };
 
 struct DFSNode
 {
     int x, y;
-    int cheat;
-    int direction;
+    bool used_cheat;
+    uint64_t depth;
+
+    bool operator==(const DFSNode& other) const
+    {
+        return x == other.x && y == other.y && used_cheat == other.used_cheat && depth == other.depth;
+    }
 };
 
-int BFS(const std::vector<std::string>& maze)
+struct DFSNodeHash
 {
-    int start_x, start_y, end_x, end_y;
+    std::size_t operator()(const DFSNode& node) const
+    {
+        return std::hash<int>()(node.x) ^ std::hash<int>()(node.y) ^ std::hash<bool>()(node.used_cheat) ^ std::hash<uint64_t>()(node.depth);
+    }
+};
+
+// finds the shortest path without cheating
+uint64_t BFS(const std::vector<std::string>& maze)
+{
+    int start_x = 0, start_y = 0, end_x = 0, end_y = 0;
 
     std::array<std::pair<int, int>, 4> directions = {
         std::make_pair(0, 1),
@@ -46,7 +60,7 @@ int BFS(const std::vector<std::string>& maze)
     // solve using BFS
     std::queue<BFSNode> q;
     std::vector<std::vector<int>> visited(maze.size(), std::vector<int>(maze[0].length(), 0));
-    q.push({ start_x, start_y, CHEAT_OFF });
+    q.push({ start_x, start_y, 0 });
 
     while(!q.empty()) {
 
@@ -78,17 +92,18 @@ int BFS(const std::vector<std::string>& maze)
         }
     }
 
-    return -1;
+    return NOT_FOUND;
 }
 
-int DFS(const std::vector<std::string>& maze, int maximum_time)
+// gets number of paths that save time by cheating
+uint64_t DFS(const std::vector<std::string>& maze, uint64_t maximum_time)
 {
-    int start_x, start_y, end_x, end_y;
+    int start_x = 0, start_y = 0, end_x = 0, end_y = 0;
 
     std::array<std::pair<int, int>, 4> directions = {
+        std::make_pair(1, 0),
         std::make_pair(0, 1),
         std::make_pair(0, -1),
-        std::make_pair(1, 0),
         std::make_pair(-1, 0)
     };
 
@@ -106,82 +121,64 @@ int DFS(const std::vector<std::string>& maze, int maximum_time)
         }
     }
 
-    // solve using DFS
-    std::vector<int> solves;
-    std::vector<DFSNode> stack;
-    std::vector<std::vector<int>> visited(maze.size(), std::vector<int>(maze[0].length(), 0));
-    stack.push_back({ start_x, start_y, CHEAT_OFF, 0 });
+    std::unordered_map<DFSNode, uint64_t, DFSNodeHash> memo;
+    std::unordered_set<std::pair<int, int>> successful_cheats;
 
-    // check every possible path
-    while(!stack.empty()) {
+    std::function<uint64_t(DFSNode)> dfs_search = [&](DFSNode node) -> uint64_t {
+        if (memo.find(node) != memo.end()) {
+            return memo.at(node);
+        }
 
-        DFSNode node = stack.back();
-        stack.pop_back();
+        if (node.depth > maximum_time) {
+            return 0;
+        }
 
-        // check if we have reached the end
         if (node.x == end_x && node.y == end_y) {
-            solves.push_back(stack.size());
-            continue;
+            return 1;
         }
 
-        // check if we have reached the maximum time
-        if (node.x < 0 || node.x >= maze[0].length() || node.y < 0 || node.y >= maze.size()) {
-            continue;
-        }
 
-        // check if we reached maximum depth
-        if (solves.size() >= maximum_time) {
-            continue;
-        }
-
-        // check if this node is out of options
-        if (node.direction > 3) {
-            continue;
-        }
-
-        if (visited[node.y][node.x] == 1) {
-            continue;
-        }
-
-        const auto& dir = directions[node.direction++];
-        int new_x = node.x + dir.first;
-        int new_y = node.y + dir.second;
-
-
+        int result = 0;
         for (const auto& dir : directions) {
             int new_x = node.x + dir.first;
             int new_y = node.y + dir.second;
+            bool new_cheat = node.used_cheat;
 
             if (new_x < 0 || new_x >= maze[0].length() || new_y < 0 || new_y >= maze.size()) {
                 continue;
             }
 
-            if (visited[new_y][new_x] == 1) {
-                continue;
-            }
-
+           
             if (maze[new_y][new_x] == '#') {
-                continue;
+                if (node.used_cheat) {
+                    continue;
+                }
+                new_cheat = true;
             }
 
-            int cheat = node.cheat;
-            if (maze[new_y][new_x] == 'C') {
-                if (cheat == CHEAT_OFF) {
-                    cheat = CHEAT_ON_1;
-                }
-                else if (cheat == CHEAT_ON_1) {
-                    cheat = CHEAT_ON_2;
-                }
-                else if (cheat == CHEAT_ON_2) {
-                    cheat = CHEAT_DISABLED;
-                }
-            }
-
-            stack.push_back({ new_x, new_y, cheat, node.direction + 1 });
-            visited[new_y][new_x] = 1;
+            result += dfs_search({ new_x, new_y, new_cheat, node.depth + 1 });
         }
-    }
 
+        memo[node] = result;
+        return result;
+    };
+
+    uint64_t res = dfs_search({ start_x, start_y, false, 0 });
+    return res;
+}
+
+uint64_t SolveMaze(const std::vector<std::string>& maze)
+{
+    uint64_t max_time = BFS(maze);
+    if (max_time == NOT_FOUND) {
+        return DFS(maze, max_time - 1);
+    }
+    else if (max_time < SAVE_GOAL) {
+        return 0;
+    }
+    else {
+        return DFS(maze, max_time - SAVE_GOAL);
+    }
 }
 
 void DoDay20()
@@ -205,5 +202,5 @@ void DoDay20()
         maze.push_back(line);
     }
 
-    std::cout << "    Part 1: " << BFS(maze) << std::endl;
+    std::cout << "    Part 1: " << SolveMaze(maze) << std::endl;
 }
