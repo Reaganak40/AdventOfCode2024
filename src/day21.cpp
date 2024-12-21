@@ -84,6 +84,10 @@ void SolvePhysicalKeypad(const std::string& code, std::vector<std::string>& perm
             case 'A': target_pos = BUTTON_A; break;
         }
 
+        // note we only move all x then all y or vise versa. While other permutations
+        // exist where we move x then y then x then y ... etc, these will always be longer
+        // when the robots use the directional keypad
+
         int dx = target_pos.first - x;
         int dy = target_pos.second - y;
         char x_dir = dx > 0 ? '>' : '<';
@@ -161,10 +165,6 @@ std::vector<std::string>& GetOptions(char from, char to)
         default: return *options[{ from, to }];
     };
 
-    // note we only move all x then all y or vise versa. While other permutations
-    // exist where we move x then y then x then y ... etc, these will always be longer
-    // when the robots use the directional keypad
-    
     int dx = to_pos.first - from_pos.first;
     int dy = to_pos.second - from_pos.second;
 
