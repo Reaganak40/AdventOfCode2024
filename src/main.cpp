@@ -20,6 +20,7 @@ void DoDay17();
 void DoDay18();
 void DoDay19();
 void DoDay20();
+void DoDay21();
 
 int main(int argc, char *argv[])
 {
@@ -42,7 +43,8 @@ int main(int argc, char *argv[])
     // DoDay17();
     // DoDay18();
     // DoDay19();
-    DoDay20();
+    // DoDay20();
+    DoDay21();
     
     return 0;
 }
