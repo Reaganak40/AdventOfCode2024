@@ -5,10 +5,11 @@ struct Sequence
 {
     // the change in numbers
     int s1, s2, s3, s4;
+    int last_num;
 
     void AddToSequence(int num)
     {
-        static int last_num = num;
+        num %= 10;
         int ns = num - last_num;
         last_num = num;
         
@@ -18,34 +19,24 @@ struct Sequence
         s4 = ns;
     }
 
-    bool operator==(const Sequence& other) const {
-        return s1 == other.s1 && s2 == other.s2 && s3 == other.s3 && s4 == other.s4;
-    }
-};
-
-struct SequenceHash
-{
-    std::size_t operator()(const Sequence& s) const {
-        std::hash<int> hasher;
-        return hasher(s.s1) ^ hasher(s.s2) ^ hasher(s.s3) ^ hasher(s.s4);
+    uint32_t ConvertBits()
+    {
+        // since all possible values are -9 to 9, we can use 5 bits to represent each value
+        // allows us to represent the sequence as an optimized 32 bit integer (for alignment purposes)
+        uint32_t bits = 0;
+        bits |= ((unsigned char)(s1 + 9)) << 20;
+        bits |= ((unsigned char)(s2 + 9)) << 15;
+        bits |= ((unsigned char)(s3 + 9)) << 10;
+        bits |= ((unsigned char)(s4 + 9)) << 5;
+        return bits;
     }
 };
 
 uint64_t GenSecretNumber(uint64_t secret_number)
 {
-    uint64_t n_number = secret_number << 6;
-    secret_number ^= n_number;
-    secret_number %= 16777216;
-
-    n_number = secret_number >> 5;
-    secret_number ^= n_number;
-    secret_number %= 16777216;
-
-    n_number = secret_number << 11;
-    secret_number ^= n_number;
-    secret_number %= 16777216;
-
-    return secret_number;
+    secret_number = ((secret_number << 6) ^ secret_number) & 0xffffff;
+    secret_number = ((secret_number >> 5) ^ secret_number) & 0xffffff;
+    return ((secret_number << 11) ^ secret_number) & 0xffffff;
 }
 
 
@@ -69,26 +60,26 @@ int Solve2(const std::vector<uint64_t>& initial_nums)
     const int iterations = 2000;
 
     // track running total of all sequences
-    std::unordered_map<Sequence, int, SequenceHash> totals;
+    std::unordered_map<uint32_t, int> totals;
 
-    for (uint64_t num : initial_nums){
+    for (uint64_t num : initial_nums) {
         Sequence seq = { 0, 0, 0, 0 };
-        std::unordered_set<Sequence, SequenceHash> seen;
+        std::unordered_set<uint32_t> seen;
 
-        seq.AddToSequence(num % 10);
+        seq.AddToSequence(num);
         for (int i = 1; i < iterations; i++) {
             num = GenSecretNumber(num);
-            int price = num % 10;
-            seq.AddToSequence(price);
-
+            seq.AddToSequence(num);
             if (i < 4) continue;
-            if (seen.find(seq) != seen.end()) continue;
-            seen.insert(seq);
 
-            if (totals.find(seq) == totals.end()) {
-                totals[seq] = price;
+            uint32_t bits = seq.ConvertBits();
+            if (seen.find(bits) != seen.end()) continue;
+            seen.insert(bits);
+
+            if (totals.find(bits) == totals.end()) {
+            totals[bits] = seq.last_num;
             } else {
-                totals[seq] += price;
+                totals[bits] += seq.last_num;
             }
         }
     }
