@@ -24,10 +24,10 @@ struct Sequence
         // since all possible values are -9 to 9, we can use 5 bits to represent each value
         // allows us to represent the sequence as an optimized 32 bit integer (for alignment purposes)
         uint32_t bits = 0;
-        bits |= ((unsigned char)(s1 + 9)) << 20;
-        bits |= ((unsigned char)(s2 + 9)) << 15;
-        bits |= ((unsigned char)(s3 + 9)) << 10;
-        bits |= ((unsigned char)(s4 + 9)) << 5;
+        bits |= ((unsigned char)(s1 + 9)) << 15;
+        bits |= ((unsigned char)(s2 + 9)) << 10;
+        bits |= ((unsigned char)(s3 + 9)) << 5;
+        bits |= ((unsigned char)(s4 + 9));
         return bits;
     }
 };
@@ -58,9 +58,14 @@ uint64_t Solve1(const std::vector<uint64_t>& initial_nums)
 int Solve2(const std::vector<uint64_t>& initial_nums)
 {
     const int iterations = 2000;
+    constexpr uint32_t max_sequences = 1048576;
 
     // track running total of all sequences
-    std::unordered_map<uint32_t, int> totals;
+    int* totals = (int*)calloc(max_sequences, sizeof(int));
+    if (!totals) {
+        std::cerr << "Could not allocate memory" << std::endl;
+        return 0;
+    }
 
     for (uint64_t num : initial_nums) {
         Sequence seq = { 0, 0, 0, 0 };
@@ -75,21 +80,17 @@ int Solve2(const std::vector<uint64_t>& initial_nums)
             uint32_t bits = seq.ConvertBits();
             if (seen.find(bits) != seen.end()) continue;
             seen.insert(bits);
-
-            if (totals.find(bits) == totals.end()) {
-            totals[bits] = seq.last_num;
-            } else {
-                totals[bits] += seq.last_num;
-            }
+            totals[bits] += seq.last_num;
         }
     }
 
     // get the largest total
     int largest = 0;
-    for (const auto& [seq, total] : totals) {
-        largest = std::max(largest, total);
+    for (int i = 0; i < max_sequences; i++) {
+        largest = std::max(largest, totals[i]);
     }
 
+    free(totals);
     return largest;
 }
 
