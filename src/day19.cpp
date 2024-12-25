@@ -29,7 +29,7 @@ struct StripeMap
     }
 };
 
-void Split(const std::string& s, char delim, std::vector<std::string>& elems)
+static void Split(const std::string& s, char delim, std::vector<std::string>& elems)
 {
     std::stringstream ss(s);
     std::string item;
